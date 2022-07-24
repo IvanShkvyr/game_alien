@@ -5,6 +5,7 @@ import pygame
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from alien import Alien
 
 
 class AlienInvasion:
@@ -28,6 +29,10 @@ class AlienInvasion:
 
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+
+        self._create_fleet()
+
 
     def run_game(self):
         """Start the main game loop"""
@@ -38,10 +43,6 @@ class AlienInvasion:
             self._update_bullets()
             self._update_screen()    
 
-
-
-
-            
     
     def _check_events(self):
         """Tracks mouse and keyboard events"""
@@ -73,12 +74,39 @@ class AlienInvasion:
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = False
 
+
+    def _create_fleet(self):
+        """Create alien's fleet"""
+        # створити прибульців та визначити кількість прибульців у ряду.
+        # Відстань між врибульцями дорівнює 0ю5 ширині одного прибульця
+        alien = Alien(self)
+        alien_width = alien.rect.width
+        available_space_x = self.settings.screen_width - (2 * alien_width)
+        number_aliens_x = available_space_x // (2 * alien_width)
+
+        # Створити перший ряд прибульців.
+        for alien_number in range(number_aliens_x):
+            self._create_alien(alien_number)
+            
+
+
+    def _create_alien(self, alien_number):
+        """Створити прибульця та поставити його в ряду"""
+        alien = Alien(self)
+        alien_width = alien.rect.width
+        alien.x = alien_width + 2 * alien_width * alien_number
+        alien.rect.x = alien.x
+        self.aliens.add(alien)
+
+
+
     def _fire_bullet(self):
         """Create new bullet and add it to the bullet's group"""
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
     
+
     def _update_bullets(self):
         """Update the position of the bullets and get rid of the old bullets"""
         # Update bullet's position
@@ -97,8 +125,11 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
 
+        self.aliens.draw(self.screen)
+
         # Show last screen
         pygame.display.flip()
+
 
 if __name__ == "__main__":
     # Create the game and run it
